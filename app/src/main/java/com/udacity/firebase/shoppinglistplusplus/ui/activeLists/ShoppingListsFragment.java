@@ -88,54 +88,15 @@ public class ShoppingListsFragment extends Fragment {
         mListView.setAdapter(mShoppingListAdapter);
 
 
-        mFirebaseListsReference.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                //mShoppingListAdapter.add(shoppingList);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                Log.d(TAG, shoppingList.getKey() + " has changed.");
-                int shoppingListIndex = -1;
-                for(int i=0; i<shoppingLists.size(); i++) {
-                    if (shoppingLists.get(i).getKey() == shoppingList.getKey()) {
-                        shoppingListIndex = i;
-                    }
-                }
-
-                if (shoppingListIndex >= 0) {
-                    shoppingLists.set(shoppingListIndex, shoppingList);
-                }
-                mShoppingListAdapter.notifyDataSetChanged();
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-
         /**
          * Set interactive bits, such as click events and adapters
          */
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ShoppingList shoppingList = shoppingLists.get(position);
+
+                ShoppingList shoppingList = (ShoppingList) parent.getItemAtPosition(position);
+                        //.get(position);
 
                 Intent intent = new Intent(getActivity(), ActiveListDetailsActivity.class);
                 intent.putExtra(Constants.EXTRA_LIST_KEY, shoppingList.getKey());
@@ -150,6 +111,7 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mShoppingListAdapter.cleanup();
     }
 
 
