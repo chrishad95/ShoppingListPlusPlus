@@ -40,7 +40,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         mListKey = getIntent().getStringExtra(Constants.EXTRA_LIST_KEY);
         if (mListKey == null) {
-            throw new IllegalArgumentException("Must pass EXTRA_LIST_KEY");
+            finish();
         }
 
         mShoppingListReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
@@ -78,7 +78,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mShoppingList = dataSnapshot.getValue(ShoppingList.class);
-                setTitle(mShoppingList.getListName());
+                if (mShoppingList == null) {
+                    finish();
+                } else {
+                    setTitle(mShoppingList.getListName());
+                }
             }
 
             @Override
@@ -207,6 +211,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     public void removeList() {
         /* Create an instance of the dialog fragment and show it */
         DialogFragment dialog = RemoveListDialogFragment.newInstance(mShoppingList);
+
         dialog.show(getFragmentManager(), "RemoveListDialogFragment");
     }
 

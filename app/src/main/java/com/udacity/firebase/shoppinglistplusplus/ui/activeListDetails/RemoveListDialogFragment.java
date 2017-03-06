@@ -6,21 +6,27 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
  * Lets the user remove active shopping list
  */
 public class RemoveListDialogFragment extends DialogFragment {
     final static String LOG_TAG = RemoveListDialogFragment.class.getSimpleName();
-
+    private String mListKey;
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
     public static RemoveListDialogFragment newInstance(ShoppingList shoppingList) {
         RemoveListDialogFragment removeListDialogFragment = new RemoveListDialogFragment();
         Bundle bundle = new Bundle();
+
+        bundle.putString(Constants.EXTRA_LIST_KEY, shoppingList.getKey());
+
         removeListDialogFragment.setArguments(bundle);
         return removeListDialogFragment;
     }
@@ -31,6 +37,8 @@ public class RemoveListDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mListKey = getArguments().getString(Constants.EXTRA_LIST_KEY);
     }
 
     @Override
@@ -57,7 +65,8 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-
+        DatabaseReference listReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
+        listReference.removeValue();
     }
 
 }

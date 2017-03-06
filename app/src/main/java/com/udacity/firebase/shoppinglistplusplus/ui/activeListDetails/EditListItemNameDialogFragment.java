@@ -5,11 +5,14 @@ import android.os.Bundle;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
  * Lets user edit list item name for all copies of the current list
  */
 public class EditListItemNameDialogFragment extends EditListDialogFragment {
+
+    private String mListKey;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
@@ -29,6 +32,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mListKey = getArguments().getString(Constants.EXTRA_LIST_KEY);
     }
 
 
