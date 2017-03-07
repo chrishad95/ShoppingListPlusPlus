@@ -1,27 +1,41 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
+import com.google.firebase.database.Exclude;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by New Owner on 3/6/2017.
  */
 
 public class ShoppingListItem {
-    private String name;
-    private String owner;
+    private String itemName;
+    private String itemOwner;
 
     public ShoppingListItem() {
 
     }
 
-    public ShoppingListItem(String name, String owner) {
-        this.name = name;
-        this.owner = owner;
+    public ShoppingListItem(String itemName, String itemOwner) {
+        this.itemName = itemName;
+        this.itemOwner = itemOwner;
     }
 
-    public String getName() {
-        return name;
+    public String getItemName() {
+        return itemName;
     }
 
-    public String getOwner() {
-        return owner;
+    public String getItemOwner() {
+        return itemOwner;
+    }
+
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("itemName", itemName);
+        result.put("itemOwner", itemOwner);
+        return result;
     }
 }

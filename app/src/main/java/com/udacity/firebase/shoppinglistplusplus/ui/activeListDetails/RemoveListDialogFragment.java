@@ -12,6 +12,9 @@ import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Lets the user remove active shopping list
  */
@@ -65,8 +68,13 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-        DatabaseReference listReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
-        listReference.removeValue();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/lists/" + mListKey, null);
+        childUpdates.put("/shoppingListItems/" + mListKey, null);
+        FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
+
+//        DatabaseReference listReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
+//        listReference.removeValue();
     }
 
 }

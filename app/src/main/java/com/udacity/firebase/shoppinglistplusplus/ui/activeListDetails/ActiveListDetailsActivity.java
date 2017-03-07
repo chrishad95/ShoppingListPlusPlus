@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
@@ -31,6 +32,10 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private ShoppingList mShoppingList;
     private String mListKey;
     private DatabaseReference mShoppingListReference;
+    private DatabaseReference mShoppingListItemsReference;
+    private ActiveListItemAdapter mShoppingListItemsAdapter;
+
+
     private ValueEventListener mShoppingListListener;
 
     @Override
@@ -41,14 +46,21 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mListKey = getIntent().getStringExtra(Constants.EXTRA_LIST_KEY);
         if (mListKey == null) {
             finish();
+            return;
         }
 
-        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
 
         /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
+
+        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
+
+        mShoppingListItemsReference = FirebaseDatabase.getInstance().getReference().child("shoppingListItems").child(mListKey);
+
+        mShoppingListItemsAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class, R.layout.single_active_list_item, mShoppingListItemsReference, mListKey);
+        mListView.setAdapter(mShoppingListItemsAdapter);
 
         /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
         invalidateOptionsMenu();
@@ -64,11 +76,19 @@ public class ActiveListDetailsActivity extends BaseActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 /* Check that the view is not the empty footer item */
                 if(view.getId() != R.id.list_view_footer_empty) {
-                    showEditListItemNameDialog();
+                    ShoppingListItem shoppingListItem = mShoppingListItemsAdapter.getItem(position);
+                    if (shoppingListItem != null) {
+                        String itemName = shoppingListItem.getItemName();
+                        String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
+                        showEditListItemNameDialog(itemName, itemKey);
+
+                    }
                 }
                 return true;
             }
         });
+
+
     }
 
     @Override
@@ -171,6 +191,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mShoppingListItemsAdapter != null) {
+            mShoppingListItemsAdapter.cleanup();
+        }
     }
 
     /**
@@ -236,9 +259,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
     /**
      * Show the edit list item name dialog after longClick on the particular item
      */
-    public void showEditListItemNameDialog() {
+    public void showEditListItemNameDialog(String itemName, String itemKey) {
         /* Create an instance of the dialog fragment and show it */
-        DialogFragment dialog = EditListItemNameDialogFragment.newInstance(mShoppingList);
+        DialogFragment dialog = EditListItemNameDialogFragment.newInstance(mShoppingList, itemName, itemKey, mListKey);
         dialog.show(this.getFragmentManager(), "EditListItemNameDialogFragment");
     }
 

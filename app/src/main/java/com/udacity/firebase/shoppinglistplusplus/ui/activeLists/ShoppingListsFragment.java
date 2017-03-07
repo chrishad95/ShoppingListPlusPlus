@@ -111,7 +111,9 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mShoppingListAdapter.cleanup();
+        if (mShoppingListAdapter != null) {
+            mShoppingListAdapter.cleanup();
+        }
     }
 
 

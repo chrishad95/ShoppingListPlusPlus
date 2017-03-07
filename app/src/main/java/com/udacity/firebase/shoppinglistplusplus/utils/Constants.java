@@ -9,6 +9,8 @@ public final class Constants {
      * Constants related to locations in Firebase, such as the name of the node
      * where active lists are stored (ie "activeLists")
      */
+    public static final String FIREBASE_LOCATION_SHOPPING_LIST_ITEMS = "/shoppingListItems/";
+    public static final String FIREBASE_LOCATION_ACTIVE_LISTS = "/lists/";
 
 
     /**
@@ -29,11 +31,15 @@ public final class Constants {
 
     public static final String EXTRA_LIST_NAME = "LIST_NAME";
     public static final String EXTRA_LIST_KEY = "LIST_KEY";
+    public static final String EXTRA_ITEM_KEY = "ITEM_KEY";
+    public static final String EXTRA_ITEM_NAME = "ITEM_NAME";
 
     public static final String FIREBASE_PROPERTY_LIST_NAME = "listName";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED = "dateLastChanged";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_CREATED = "timestampCreated";
     public static final String FIREBASE_PROPERTY_LIST_OWNER = "owner";
+    public static final String FIREBASE_PROPERTY_ITEM_NAME = "itemName";
+    public static final String FIREBASE_PROPERTY_ITEM_OWNER = "itemOwner";
 
 
 }
