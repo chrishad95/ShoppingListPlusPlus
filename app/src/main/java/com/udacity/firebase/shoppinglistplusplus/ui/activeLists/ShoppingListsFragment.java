@@ -21,6 +21,7 @@ import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ShoppingListAdapter;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ public class ShoppingListsFragment extends Fragment {
 
     private ListView mListView;
     private ActiveListAdapter mShoppingListAdapter;
+    private String mUserName;
+
 
     // firebase stuff
     private DatabaseReference mFirebaseListsReference;
@@ -50,9 +53,10 @@ public class ShoppingListsFragment extends Fragment {
      * Create fragment and pass bundle with data as it's arguments
      * Right now there are not arguments...but eventually there will be.
      */
-    public static ShoppingListsFragment newInstance() {
+    public static ShoppingListsFragment newInstance(String userName) {
         ShoppingListsFragment fragment = new ShoppingListsFragment();
         Bundle args = new Bundle();
+        args.putString(Constants.EXTRA_USER_NAME, userName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,6 +74,7 @@ public class ShoppingListsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+            mUserName = getArguments().getString(Constants.EXTRA_USER_NAME);
         }
     }
 
@@ -82,7 +87,7 @@ public class ShoppingListsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
         initializeScreen(rootView);
 
-        mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child("lists");
+        mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserName));
 
         mShoppingListAdapter = new ActiveListAdapter(getActivity(), ShoppingList.class, R.layout.single_active_list, mFirebaseListsReference);
         mListView.setAdapter(mShoppingListAdapter);
@@ -95,11 +100,8 @@ public class ShoppingListsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                ShoppingList shoppingList = (ShoppingList) parent.getItemAtPosition(position);
-                        //.get(position);
-
                 Intent intent = new Intent(getActivity(), ActiveListDetailsActivity.class);
-                intent.putExtra(Constants.EXTRA_LIST_KEY, shoppingList.getKey());
+                intent.putExtra(Constants.EXTRA_LIST_KEY, mShoppingListAdapter.getItem(position).getKey());
                 startActivity(intent);
 
             }

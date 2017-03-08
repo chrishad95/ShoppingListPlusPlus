@@ -1,7 +1,9 @@
 package com.udacity.firebase.shoppinglistplusplus.ui;
 
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,6 +11,7 @@ import android.widget.LinearLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
  * BaseActivity class is used as a base class for all activities in the app
@@ -17,10 +20,14 @@ import com.udacity.firebase.shoppinglistplusplus.R;
  */
 public abstract class BaseActivity extends AppCompatActivity  {
 
+    protected String mUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(BaseActivity.this);
+        mUserEmail = sp.getString(Constants.KEY_EMAIL, null);
 
     }
 

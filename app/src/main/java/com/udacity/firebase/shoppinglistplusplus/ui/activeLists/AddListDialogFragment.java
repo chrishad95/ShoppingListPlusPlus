@@ -17,6 +17,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,14 +27,15 @@ import java.util.Map;
  */
 public class AddListDialogFragment extends DialogFragment {
     EditText mEditTextListName;
-
+    String mUserName;
     /**
      * Public static constructor that creates fragment and
      * passes a bundle with data into it when adapter is created
      */
-    public static AddListDialogFragment newInstance() {
+    public static AddListDialogFragment newInstance(String userName) {
         AddListDialogFragment addListDialogFragment = new AddListDialogFragment();
         Bundle bundle = new Bundle();
+        bundle.putString(Constants.EXTRA_USER_NAME, userName);
         addListDialogFragment.setArguments(bundle);
         return addListDialogFragment;
     }
@@ -44,6 +46,8 @@ public class AddListDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mUserName = getArguments().getString(Constants.EXTRA_USER_NAME);
+
     }
 
     /**
@@ -100,7 +104,7 @@ public class AddListDialogFragment extends DialogFragment {
 
         String listKey =  mFirebaseListsReference.push().getKey();
         String listName = mEditTextListName.getText().toString();
-        ShoppingList shoppingList = new ShoppingList(listName, "anonymous", listKey);
+        ShoppingList shoppingList = new ShoppingList(listName, mUserName, listKey);
 
         Map<String, Object> listValues = shoppingList.toMap();
         Map<String, Object> childUpdates = new HashMap<>();

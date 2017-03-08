@@ -1,7 +1,11 @@
 package com.udacity.firebase.shoppinglistplusplus.ui;
 
 import android.app.DialogFragment;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,12 +15,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.AddListDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.ShoppingListsFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.AddMealDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
  * Represents the home screen of the app which
@@ -24,18 +33,67 @@ import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
  */
 public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    public static final int RC_SIGN_IN = 1;
+    public static final String ANONYMOUS = "anonymous";
+
+    // Firebase auth variables
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private String mUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /**
-         * Link layout elements from XML and setup the toolbar
-         */
-        initializeScreen();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // logged in!!!
+                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor spe = sp.edit();
+
+                    mUsername = user.getEmail();
+                    spe.putString(Constants.KEY_EMAIL, mUsername).apply();
+                    /**
+                     * Link layout elements from XML and setup the toolbar
+                     */
+
+                    initializeScreen();
+                } else {
+                    onSignedOutCleanup();
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(false)
+                            .setProviders(AuthUI.EMAIL_PROVIDER, AuthUI.GOOGLE_PROVIDER)
+                            .build(),
+                            RC_SIGN_IN);
+                }
+            }
+        };
+
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+
+        // handle the result from firebaseAuth
+
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "Sign in cancelled.", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
 
     /**
      * Override onOptionsItemSelected to use main_menu instead of BaseActivity menu
@@ -91,7 +149,7 @@ public class MainActivity extends BaseActivity {
      */
     public void showAddListDialog(View view) {
         /* Create an instance of the dialog fragment and show it */
-        DialogFragment dialog = AddListDialogFragment.newInstance();
+        DialogFragment dialog = AddListDialogFragment.newInstance(mUsername);
         dialog.show(MainActivity.this.getFragmentManager(), "AddListDialogFragment");
     }
 
@@ -103,6 +161,28 @@ public class MainActivity extends BaseActivity {
         DialogFragment dialog = AddMealDialogFragment.newInstance();
         dialog.show(MainActivity.this.getFragmentManager(), "AddMealDialogFragment");
     }
+
+    private void onSignedOutCleanup() {
+        mUsername = ANONYMOUS;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
+    }
+
+
+
+
 
     /**
      * SectionPagerAdapter class that extends FragmentStatePagerAdapter to save fragments state
@@ -128,13 +208,13 @@ public class MainActivity extends BaseActivity {
              */
             switch (position) {
                 case 0:
-                    fragment = ShoppingListsFragment.newInstance();
+                    fragment = ShoppingListsFragment.newInstance(mUserEmail);
                     break;
                 case 1:
                     fragment = MealsFragment.newInstance();
                     break;
                 default:
-                    fragment = ShoppingListsFragment.newInstance();
+                    fragment = ShoppingListsFragment.newInstance(mUserEmail);
                     break;
             }
 
