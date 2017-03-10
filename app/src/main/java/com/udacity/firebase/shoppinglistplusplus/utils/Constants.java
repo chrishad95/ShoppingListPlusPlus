@@ -47,5 +47,9 @@ public final class Constants {
     public static final String FIREBASE_PROPERTY_ITEM_BOUGHT = "itemBought";
     public static final String FIREBASE_PROPERTY_ITEM_BOUGHT_BY = "itemBoughtBy";
 
+    public static final String FIREBASE_PROPERTY_USER_NAME = "name";
+    public static final String FIREBASE_PROPERTY_USER_EMAIL = "email";
+    public static final String FIREBASE_PROPERTY_TIMESTAMP_JOINED = "timestampJoined";
+
 
 }
