@@ -14,12 +14,17 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents the details screen for the selected shopping list
@@ -31,6 +36,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private ListView mListView;
     private ShoppingList mShoppingList;
     private String mListKey;
+    private boolean mCurrentUserIsOwner = false;
     private DatabaseReference mShoppingListReference;
     private DatabaseReference mShoppingListItemsReference;
     private ActiveListItemAdapter mShoppingListItemsAdapter;
@@ -49,21 +55,49 @@ public class ActiveListDetailsActivity extends BaseActivity {
             return;
         }
 
+        // create firebase references
+        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS).child(mListKey);
+        mShoppingListItemsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mListKey);
 
         /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
 
-        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
-
-        mShoppingListItemsReference = FirebaseDatabase.getInstance().getReference().child("shoppingListItems").child(mListKey);
-
-        mShoppingListItemsAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class, R.layout.single_active_list_item, mShoppingListItemsReference, mListKey);
+        // set up the list view to show items in the shopping list items adapter
+        mShoppingListItemsAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class, R.layout.single_active_list_item, mShoppingListItemsReference, mListKey, mUserEmail);
         mListView.setAdapter(mShoppingListItemsAdapter);
 
-        /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
-        invalidateOptionsMenu();
+        ValueEventListener shoppingListListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                if (shoppingList == null) {
+                    finish();
+                    return;
+
+                }
+                mShoppingList = shoppingList;
+
+                mShoppingListItemsAdapter.setShoppingList(mShoppingList);
+                mCurrentUserIsOwner = Utils.checkIfOwner(mShoppingList, mUserEmail);
+
+                 /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
+                invalidateOptionsMenu();
+                setTitle(shoppingList.getListName());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(ActiveListDetailsActivity.this, "Failed to load list." , Toast.LENGTH_SHORT).show();
+            }
+        };
+        mShoppingListReference.addValueEventListener(shoppingListListener);
+
+        // keep a copy so of listener so we can remove it when app stops
+        mShoppingListListener = shoppingListListener;
+
+
 
         /**
          * Set up click listeners for interaction.
@@ -87,6 +121,30 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 return true;
             }
         });
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (view.getId() != R.id.list_view_footer_empty) {
+                    String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
+
+                    Map<String, Object> childUpdates = new HashMap<>();
+
+                    // add item to the list in the shoppingListItems node
+                    ShoppingListItem shoppingListItem = mShoppingListItemsAdapter.getItem(position);
+                    if (shoppingListItem.isItemBought()) {
+                        if (shoppingListItem.getItemBoughtBy().equals(mUserEmail)) {
+                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", null);
+                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", false);
+                        }
+                    } else {
+                        childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", mUserEmail);
+                        childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", true);
+                    }
+                    if(childUpdates.size() > 0) { FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates); }
+                }
+
+            }
+        });
 
 
     }
@@ -94,34 +152,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onStart() {
         super.onStart();
-        ValueEventListener shoppingListListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mShoppingList = dataSnapshot.getValue(ShoppingList.class);
-                if (mShoppingList == null) {
-                    finish();
-                } else {
-                    setTitle(mShoppingList.getListName());
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ActiveListDetailsActivity.this, "Failed to load list." , Toast.LENGTH_SHORT).show();
-            }
-        };
-        mShoppingListReference.addValueEventListener(shoppingListListener);
-
-        // keep a copy so of listener so we can remove it when app stops
-        mShoppingListListener = shoppingListListener;
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mShoppingListListener != null) {
-            mShoppingListReference.removeEventListener(mShoppingListListener);
-        }
     }
 
     @Override
@@ -138,8 +173,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         MenuItem archive = menu.findItem(R.id.action_archive);
 
         /* Only the edit and remove options are implemented */
-        remove.setVisible(true);
-        edit.setVisible(true);
+        remove.setVisible(mCurrentUserIsOwner);
+        edit.setVisible(mCurrentUserIsOwner);
         share.setVisible(false);
         archive.setVisible(false);
 
@@ -191,6 +226,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mShoppingListListener != null) {
+            mShoppingListReference.removeEventListener(mShoppingListListener);
+        }
         if (mShoppingListItemsAdapter != null) {
             mShoppingListItemsAdapter.cleanup();
         }
@@ -243,7 +281,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void showAddListItemDialog(View view) {
         /* Create an instance of the dialog fragment and show it */
-        DialogFragment dialog = AddListItemDialogFragment.newInstance(mShoppingList);
+        DialogFragment dialog = AddListItemDialogFragment.newInstance(mShoppingList, mUserEmail);
         dialog.show(getFragmentManager(), "AddListItemDialogFragment");
     }
 

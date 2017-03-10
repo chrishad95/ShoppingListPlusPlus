@@ -41,8 +41,11 @@ public final class Constants {
     public static final String FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED = "dateLastChanged";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_CREATED = "timestampCreated";
     public static final String FIREBASE_PROPERTY_LIST_OWNER = "owner";
+
     public static final String FIREBASE_PROPERTY_ITEM_NAME = "itemName";
     public static final String FIREBASE_PROPERTY_ITEM_OWNER = "itemOwner";
+    public static final String FIREBASE_PROPERTY_ITEM_BOUGHT = "itemBought";
+    public static final String FIREBASE_PROPERTY_ITEM_BOUGHT_BY = "itemBoughtBy";
 
 
 }

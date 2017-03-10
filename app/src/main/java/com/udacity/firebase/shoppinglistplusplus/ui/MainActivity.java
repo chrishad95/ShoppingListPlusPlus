@@ -33,12 +33,8 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
  */
 public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    public static final int RC_SIGN_IN = 1;
     public static final String ANONYMOUS = "anonymous";
 
-    // Firebase auth variables
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
     private String mUsername;
 
     @Override
@@ -46,54 +42,13 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        /**
+         * Link layout elements from XML and setup the toolbar
+         */
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // logged in!!!
-                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    SharedPreferences.Editor spe = sp.edit();
-
-                    mUsername = user.getEmail();
-                    spe.putString(Constants.KEY_EMAIL, mUsername).apply();
-                    /**
-                     * Link layout elements from XML and setup the toolbar
-                     */
-
-                    initializeScreen();
-                } else {
-                    onSignedOutCleanup();
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setIsSmartLockEnabled(false)
-                            .setProviders(AuthUI.EMAIL_PROVIDER, AuthUI.GOOGLE_PROVIDER)
-                            .build(),
-                            RC_SIGN_IN);
-                }
-            }
-        };
-
+        initializeScreen();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-
-        // handle the result from firebaseAuth
-
-        if (requestCode == RC_SIGN_IN) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(this, "Sign in cancelled.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
 
     /**
      * Override onOptionsItemSelected to use main_menu instead of BaseActivity menu
@@ -104,6 +59,9 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         /* Inflate the menu; this adds items to the action bar if it is present. */
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem logout = menu.findItem(R.id.action_logout);
+        logout.setVisible(true);
+
         return true;
     }
 
@@ -162,23 +120,7 @@ public class MainActivity extends BaseActivity {
         dialog.show(MainActivity.this.getFragmentManager(), "AddMealDialogFragment");
     }
 
-    private void onSignedOutCleanup() {
-        mUsername = ANONYMOUS;
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mAuthStateListener != null) {
-            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
-    }
 
 
 

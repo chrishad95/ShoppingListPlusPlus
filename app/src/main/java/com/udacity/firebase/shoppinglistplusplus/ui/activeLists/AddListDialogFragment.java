@@ -18,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,15 +103,16 @@ public class AddListDialogFragment extends DialogFragment {
     public void addShoppingList() {
         DatabaseReference mFirebaseListsReference = FirebaseDatabase.getInstance().getReference();
 
-        String listKey =  mFirebaseListsReference.push().getKey();
+        String listKey =  mFirebaseListsReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).push().getKey();
+
         String listName = mEditTextListName.getText().toString();
         ShoppingList shoppingList = new ShoppingList(listName, mUserName, listKey);
 
         Map<String, Object> listValues = shoppingList.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/lists/" + listKey, listValues);
-        childUpdates.put("/user-lists/" + shoppingList.getOwner() + "/" + listKey, listValues);
+        childUpdates.put("/" + Constants.FIREBASE_LOCATION_ACTIVE_LISTS + "/" + listKey, listValues);
+        childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserName) + "/" + listKey, listValues);
 
         mFirebaseListsReference.updateChildren(childUpdates);
 

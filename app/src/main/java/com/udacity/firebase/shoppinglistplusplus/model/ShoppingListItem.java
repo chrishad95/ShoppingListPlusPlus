@@ -12,6 +12,16 @@ import java.util.Map;
 public class ShoppingListItem {
     private String itemName;
     private String itemOwner;
+    private boolean itemBought;
+    private String itemBoughtBy;
+
+    public boolean isItemBought() {
+        return itemBought;
+    }
+
+    public String getItemBoughtBy() {
+        return itemBoughtBy;
+    }
 
     public ShoppingListItem() {
 
@@ -20,6 +30,8 @@ public class ShoppingListItem {
     public ShoppingListItem(String itemName, String itemOwner) {
         this.itemName = itemName;
         this.itemOwner = itemOwner;
+        this.itemBought = false;
+        this.itemBoughtBy = null;
     }
 
     public String getItemName() {

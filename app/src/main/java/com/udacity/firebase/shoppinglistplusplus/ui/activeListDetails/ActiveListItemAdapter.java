@@ -2,6 +2,7 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.graphics.Paint;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
@@ -12,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
@@ -22,15 +24,22 @@ import java.util.HashMap;
  */
 public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem> {
     private String mListKey;
+    private ShoppingList mShoppingList;
+    private String mUserEmail;
 
+    public void setShoppingList(ShoppingList shoppingList) {
+        mShoppingList = shoppingList;
+        this.notifyDataSetChanged();
+    }
     /**
      * Public constructor that initializes private instance variables when adapter is created
      */
     public ActiveListItemAdapter(Activity activity, Class<ShoppingListItem> modelClass, int modelLayout,
-                                 Query ref, String listKey) {
+                                 Query ref, String listKey, String userEmail) {
         super(activity, modelClass, modelLayout, ref);
         this.mActivity = activity;
         this.mListKey = listKey;
+        this.mUserEmail = userEmail;
     }
     /**
      * Protected method that populates the view attached to the adapter (list_view_friends_autocomplete)
@@ -43,10 +52,35 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
 
         TextView textViewItemName = (TextView) view.findViewById(R.id.text_view_active_list_item_name);
         ImageButton buttonRemoveItem = (ImageButton) view.findViewById(R.id.button_remove_item);
+        TextView textViewBoughtBy = (TextView) view.findViewById(R.id.text_view_bought_by);
+        TextView textViewBoughtByUser = (TextView) view.findViewById(R.id.text_view_bought_by_user);
 
         textViewItemName.setText(item.getItemName());
-        final String itemToRemoveKey = this.getRef(position).getKey();
 
+        if (item.isItemBought()) {
+            textViewItemName.setPaintFlags(textViewItemName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            buttonRemoveItem.setEnabled(false);
+            buttonRemoveItem.setVisibility(ImageButton.INVISIBLE);
+
+            textViewBoughtBy.setText("Bought by ");
+            textViewBoughtByUser.setText(item.getItemBoughtBy());
+
+            if (item.getItemBoughtBy().equals(mUserEmail)) {
+                textViewBoughtByUser.setText(R.string.text_you);
+            }
+            textViewBoughtBy.setVisibility(TextView.VISIBLE);
+            textViewBoughtByUser.setVisibility(TextView.VISIBLE);
+        } else {
+            textViewItemName.setPaintFlags(textViewItemName.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            textViewBoughtBy.setText("");
+            textViewBoughtByUser.setText("");
+
+            textViewBoughtBy.setVisibility(TextView.INVISIBLE);
+            textViewBoughtByUser.setVisibility(TextView.INVISIBLE);
+            buttonRemoveItem.setVisibility(ImageButton.VISIBLE);
+            buttonRemoveItem.setEnabled(true);
+        }
+        final String itemToRemoveKey = this.getRef(position).getKey();
 
         buttonRemoveItem.setOnClickListener(new View.OnClickListener() {
             @Override
