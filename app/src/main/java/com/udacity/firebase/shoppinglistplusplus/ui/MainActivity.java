@@ -35,8 +35,6 @@ public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     public static final String ANONYMOUS = "anonymous";
 
-    private String mUsername;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +105,7 @@ public class MainActivity extends BaseActivity {
      */
     public void showAddListDialog(View view) {
         /* Create an instance of the dialog fragment and show it */
-        DialogFragment dialog = AddListDialogFragment.newInstance(mUsername);
+        DialogFragment dialog = AddListDialogFragment.newInstance(mUserEmail);
         dialog.show(MainActivity.this.getFragmentManager(), "AddListDialogFragment");
     }
 
