@@ -31,12 +31,12 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingList> {
         }
         TextView listNameView = (TextView) convertView.findViewById(R.id.text_view_list_name);
         TextView ownerView = (TextView) convertView.findViewById(R.id.text_view_created_by_user);
-        TextView editTimeView = (TextView) convertView.findViewById(R.id.text_view_edit_time);
+        //TextView editTimeView = (TextView) convertView.findViewById(R.id.text_view_edit_time);
 
         ShoppingList shoppingList = getItem(position);
         listNameView.setText(shoppingList.getListName());
         ownerView.setText(shoppingList.getOwner());
-        editTimeView.setText(Utils.SIMPLE_DATE_FORMAT.format(shoppingList.getDateLastChangedLong()));
+        //editTimeView.setText(Utils.SIMPLE_DATE_FORMAT.format(shoppingList.getDateLastChangedLong()));
 
         return convertView;
     }

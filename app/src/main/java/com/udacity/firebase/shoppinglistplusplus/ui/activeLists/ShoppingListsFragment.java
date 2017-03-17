@@ -35,6 +35,7 @@ import java.util.List;
 public class ShoppingListsFragment extends Fragment {
 
     private static final String TAG = "shopping-list-fragment";
+    private String mUserEmail;
 
     private ListView mListView;
     private ActiveListAdapter mShoppingListAdapter;
@@ -51,9 +52,10 @@ public class ShoppingListsFragment extends Fragment {
      * Create fragment and pass bundle with data as it's arguments
      * Right now there are not arguments...but eventually there will be.
      */
-    public static ShoppingListsFragment newInstance() {
+    public static ShoppingListsFragment newInstance(String userEmail) {
         ShoppingListsFragment fragment = new ShoppingListsFragment();
         Bundle args = new Bundle();
+        args.putString(Constants.KEY_EMAIL, userEmail);
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,6 +72,7 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mUserEmail = getArguments().getString(Constants.KEY_EMAIL);
     }
 
     @Override
@@ -83,7 +86,7 @@ public class ShoppingListsFragment extends Fragment {
 
         mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS);
 
-        mShoppingListAdapter = new ActiveListAdapter(getActivity(), ShoppingList.class, R.layout.single_active_list, mFirebaseListsReference);
+        mShoppingListAdapter = new ActiveListAdapter(getActivity(), ShoppingList.class, R.layout.single_active_list, mFirebaseListsReference, mUserEmail);
         mListView.setAdapter(mShoppingListAdapter);
 
 
