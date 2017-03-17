@@ -16,6 +16,7 @@ public class ShoppingList {
     private HashMap<String, Object> dateLastChanged;
     private HashMap<String, Object> timestampCreated;
     private String key;
+    private HashMap<String, User> usersShopping;
 
     public ShoppingList() {
     }
@@ -32,7 +33,7 @@ public class ShoppingList {
         HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
         dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
         this.dateLastChanged = dateLastChangedObj;
-
+        this.usersShopping = new HashMap<>();
 
     }
 
@@ -47,6 +48,9 @@ public class ShoppingList {
         return dateLastChanged;
     }
     public HashMap<String, Object> getTimestampCreated() { return timestampCreated; }
+    public HashMap getUsersShopping() {
+        return usersShopping;
+    }
 
     @Exclude
     public long getDateLastChangedLong() {

@@ -12,6 +12,7 @@ public final class Constants {
     public static final String FIREBASE_LOCATION_SHOPPING_LIST_ITEMS = "shopping-list-items";
     public static final String FIREBASE_LOCATION_ACTIVE_LISTS = "lists";
     public static final String FIREBASE_LOCATION_USER_LISTS = "user-lists";
+    public static final String FIREBASE_LOCATION_USERS = "users";
 
 
     /**
@@ -50,6 +51,7 @@ public final class Constants {
     public static final String FIREBASE_PROPERTY_USER_NAME = "name";
     public static final String FIREBASE_PROPERTY_USER_EMAIL = "email";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_JOINED = "timestampJoined";
+    public static final String FIREBASE_PROPERTY_USERS_SHOPPING = "usersShopping";
 
 
 }

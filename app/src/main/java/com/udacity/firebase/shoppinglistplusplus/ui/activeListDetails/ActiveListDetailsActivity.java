@@ -2,12 +2,16 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -19,11 +23,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
+import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -34,15 +41,24 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
 
     private ListView mListView;
+    private Button mToggleShoppingModeButton;
+    private TextView mUsersShoppingTextView;
+
+
     private ShoppingList mShoppingList;
     private String mListKey;
     private boolean mCurrentUserIsOwner = false;
+    private boolean mShopping = false;
+    private User mCurrentUser;
+
     private DatabaseReference mShoppingListReference;
     private DatabaseReference mShoppingListItemsReference;
     private ActiveListItemAdapter mShoppingListItemsAdapter;
-
+    private DatabaseReference mCurrentUserReference;
 
     private ValueEventListener mShoppingListListener;
+    private ValueEventListener mCurrentUserListener;
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -58,6 +74,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // create firebase references
         mShoppingListReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS).child(mListKey);
         mShoppingListItemsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mListKey);
+        mCurrentUserReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail));
 
         /**
          * Link layout elements from XML and setup the toolbar
@@ -85,6 +102,21 @@ public class ActiveListDetailsActivity extends BaseActivity {
                  /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
                 invalidateOptionsMenu();
                 setTitle(shoppingList.getListName());
+
+                HashMap<String, User> usersShopping = mShoppingList.getUsersShopping();
+
+                if (usersShopping != null && usersShopping.size() != 0 && usersShopping.containsKey(Utils.encodeEmail(mUserEmail)) ) {
+                    mShopping = true;
+                    mToggleShoppingModeButton.setText(getString(R.string.button_stop_shopping));
+                    mToggleShoppingModeButton.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.dark_grey));
+                } else {
+                    mToggleShoppingModeButton.setText(getString(R.string.button_start_shopping));
+                    mToggleShoppingModeButton.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.primary_dark));
+                    mShopping = false;
+                }
+
+
+                setWhosShoppingText(mShoppingList.getUsersShopping());
             }
 
             @Override
@@ -97,6 +129,22 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // keep a copy so of listener so we can remove it when app stops
         mShoppingListListener = shoppingListListener;
 
+        mCurrentUserListener = mCurrentUserReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User currentUser = dataSnapshot.getValue(User.class);
+                if (currentUser != null) {
+                    mCurrentUser = currentUser;
+                } else {
+                    finish();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(LOG_TAG, getString(R.string.log_error_the_read_failed) + databaseError.getMessage());
+            }
+        });
 
 
         /**
@@ -126,26 +174,36 @@ public class ActiveListDetailsActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (view.getId() != R.id.list_view_footer_empty) {
                     String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
+                    if (mShopping) {
+                        Map<String, Object> childUpdates = new HashMap<>();
 
-                    Map<String, Object> childUpdates = new HashMap<>();
-
-                    // add item to the list in the shoppingListItems node
-                    ShoppingListItem shoppingListItem = mShoppingListItemsAdapter.getItem(position);
-                    if (shoppingListItem.isItemBought()) {
-                        if (shoppingListItem.getItemBoughtBy().equals(mUserEmail)) {
-                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", null);
-                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", false);
+                        // add item to the list in the shoppingListItems node
+                        ShoppingListItem shoppingListItem = mShoppingListItemsAdapter.getItem(position);
+                        if (shoppingListItem.isItemBought()) {
+                            if (shoppingListItem.getItemBoughtBy().equals(mUserEmail)) {
+                                childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", null);
+                                childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", false);
+                            }
+                        } else {
+                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", mUserEmail);
+                            childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", true);
                         }
-                    } else {
-                        childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT_BY + "/", mUserEmail);
-                        childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_BOUGHT + "/", true);
+                        if (childUpdates.size() > 0) {
+                            FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
+                        }
                     }
-                    if(childUpdates.size() > 0) { FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates); }
                 }
 
             }
         });
 
+
+        mToggleShoppingModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleShopping(v);
+            }
+        });
 
     }
 
@@ -232,6 +290,10 @@ public class ActiveListDetailsActivity extends BaseActivity {
         if (mShoppingListItemsAdapter != null) {
             mShoppingListItemsAdapter.cleanup();
         }
+        if (mCurrentUserListener != null) {
+            mCurrentUserReference.removeEventListener(mCurrentUserListener);
+        }
+
     }
 
     /**
@@ -249,6 +311,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
         /* Inflate the footer, set root layout to null*/
         View footer = getLayoutInflater().inflate(R.layout.footer_empty, null);
         mListView.addFooterView(footer);
+
+
+        mToggleShoppingModeButton = (Button) findViewById(R.id.button_shopping);
+        mUsersShoppingTextView = (TextView) findViewById(R.id.text_view_people_shopping);
+
     }
 
 
@@ -308,5 +375,90 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void toggleShopping(View view) {
 
+        DatabaseReference usersShoppingRef = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS).child(mListKey)
+                .child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING)
+                .child(Utils.encodeEmail(mUserEmail));
+
+        if (mShopping) {
+            usersShoppingRef.removeValue();
+        } else {
+            usersShoppingRef.setValue(mCurrentUser);
+        }
+
+    }
+
+
+    /**
+     * Set appropriate text for Start/Stop shopping button and Who's shopping textView
+     * depending on the current user shopping status
+     */
+    private void setWhosShoppingText(HashMap<String, User> usersShopping) {
+
+        if (usersShopping != null) {
+            ArrayList<String> usersWhoAreNotYou = new ArrayList<>();
+            /**
+             * If at least one user is shopping
+             * Add userName to the list of users shopping if this user is not current user
+             */
+            for (User user : usersShopping.values()) {
+                if (user != null && !(user.getEmail().equals(mUserEmail))) {
+                    usersWhoAreNotYou.add(user.getName());
+                }
+            }
+
+            int numberOfUsersShopping = usersShopping.size();
+            String usersShoppingText;
+
+            /**
+             * If current user is shopping...
+             * If current user is the only person shopping, set text to "You are shopping"
+             * If current user and one user are shopping, set text "You and userName are shopping"
+             * Else set text "You and N others shopping"
+             */
+            if (mShopping) {
+                switch (numberOfUsersShopping) {
+                    case 1:
+                        usersShoppingText = getString(R.string.text_you_are_shopping);
+                        break;
+                    case 2:
+                        usersShoppingText = String.format(
+                                getString(R.string.text_you_and_other_are_shopping),
+                                usersWhoAreNotYou.get(0));
+                        break;
+                    default:
+                        usersShoppingText = String.format(
+                                getString(R.string.text_you_and_number_are_shopping),
+                                usersWhoAreNotYou.size());
+                }
+                /**
+                 * If current user is not shopping..
+                 * If there is only one person shopping, set text to "userName is shopping"
+                 * If there are two users shopping, set text "userName1 and userName2 are shopping"
+                 * Else set text "userName and N others shopping"
+                 */
+            } else {
+                switch (numberOfUsersShopping) {
+                    case 1:
+                        usersShoppingText = String.format(
+                                getString(R.string.text_other_is_shopping),
+                                usersWhoAreNotYou.get(0));
+                        break;
+                    case 2:
+                        usersShoppingText = String.format(
+                                getString(R.string.text_other_and_other_are_shopping),
+                                usersWhoAreNotYou.get(0),
+                                usersWhoAreNotYou.get(1));
+                        break;
+                    default:
+                        usersShoppingText = String.format(
+                                getString(R.string.text_other_and_number_are_shopping),
+                                usersWhoAreNotYou.get(0),
+                                usersWhoAreNotYou.size() - 1);
+                }
+            }
+            mUsersShoppingTextView.setText(usersShoppingText);
+        } else {
+            mUsersShoppingTextView.setText("");
+        }
     }
 }

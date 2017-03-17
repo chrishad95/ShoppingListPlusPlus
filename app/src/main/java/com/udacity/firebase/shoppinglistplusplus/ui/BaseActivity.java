@@ -16,8 +16,15 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.Arrays;
 
@@ -29,6 +36,7 @@ import java.util.Arrays;
 public abstract class BaseActivity extends AppCompatActivity  {
 
     protected String mUserEmail;
+    private String mUserName;
 
     public static final int RC_SIGN_IN = 1;
 
@@ -47,14 +55,36 @@ public abstract class BaseActivity extends AppCompatActivity  {
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                FirebaseUser authUser = firebaseAuth.getCurrentUser();
+                if (authUser != null) {
                     // logged in!!!
                     SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor spe = sp.edit();
 
-                    mUserEmail = user.getEmail();
+                    mUserEmail = authUser.getEmail();
+                    mUserName = authUser.getDisplayName();
+
                     spe.putString(Constants.KEY_EMAIL, mUserEmail).apply();
+
+                    FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail))
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User user = dataSnapshot.getValue(User.class);
+                            if (user != null) {
+                                // user existed, nothing to do
+                            } else {
+                                user = new User(mUserName, mUserEmail);
+                                FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail)).setValue(user);
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
 
                 } else {
                     onSignedOutCleanup();
@@ -73,6 +103,9 @@ public abstract class BaseActivity extends AppCompatActivity  {
 
     }
 
+    private void saveUser() {
+
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();

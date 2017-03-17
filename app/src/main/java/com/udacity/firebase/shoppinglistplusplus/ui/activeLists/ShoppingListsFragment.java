@@ -38,8 +38,6 @@ public class ShoppingListsFragment extends Fragment {
 
     private ListView mListView;
     private ActiveListAdapter mShoppingListAdapter;
-    private String mUserEmail;
-
 
     // firebase stuff
     private DatabaseReference mFirebaseListsReference;
@@ -53,10 +51,9 @@ public class ShoppingListsFragment extends Fragment {
      * Create fragment and pass bundle with data as it's arguments
      * Right now there are not arguments...but eventually there will be.
      */
-    public static ShoppingListsFragment newInstance(String userEmail) {
+    public static ShoppingListsFragment newInstance() {
         ShoppingListsFragment fragment = new ShoppingListsFragment();
         Bundle args = new Bundle();
-        args.putString(Constants.EXTRA_USER_NAME, userEmail);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,9 +70,6 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mUserEmail = getArguments().getString(Constants.EXTRA_USER_NAME);
-        }
     }
 
     @Override
@@ -87,7 +81,7 @@ public class ShoppingListsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
         initializeScreen(rootView);
 
-        mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserEmail));
+        mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS);
 
         mShoppingListAdapter = new ActiveListAdapter(getActivity(), ShoppingList.class, R.layout.single_active_list, mFirebaseListsReference);
         mListView.setAdapter(mShoppingListAdapter);
