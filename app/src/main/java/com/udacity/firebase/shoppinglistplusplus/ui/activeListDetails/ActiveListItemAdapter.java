@@ -77,7 +77,15 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
 
             textViewBoughtBy.setVisibility(TextView.INVISIBLE);
             textViewBoughtByUser.setVisibility(TextView.INVISIBLE);
-            buttonRemoveItem.setVisibility(ImageButton.VISIBLE);
+
+            // remove item button should only be visible if you are the owner of the list
+            // or if you are the owner of the item
+            String itemOwner = item.getItemOwner();
+            if (itemOwner.equals(mUserEmail) || (mShoppingList != null && mShoppingList.getOwner().equals(mUserEmail))) {
+                buttonRemoveItem.setVisibility(ImageButton.VISIBLE);
+            } else {
+                buttonRemoveItem.setVisibility(ImageButton.INVISIBLE);
+            }
             buttonRemoveItem.setEnabled(true);
         }
         final String itemToRemoveKey = this.getRef(position).getKey();

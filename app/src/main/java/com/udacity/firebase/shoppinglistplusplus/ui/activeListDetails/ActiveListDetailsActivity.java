@@ -159,10 +159,18 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 /* Check that the view is not the empty footer item */
                 if(view.getId() != R.id.list_view_footer_empty) {
                     ShoppingListItem shoppingListItem = mShoppingListItemsAdapter.getItem(position);
+                    // only the owner of the list or the owner of the item
+                    // can edit the item name if they are not shopping and the item is not bought
+
                     if (shoppingListItem != null) {
-                        String itemName = shoppingListItem.getItemName();
-                        String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
-                        showEditListItemNameDialog(itemName, itemKey);
+                        String itemOwner = shoppingListItem.getItemOwner();
+                        if ((itemOwner.equals(mCurrentUser.getEmail()) || itemOwner.equals(mShoppingList.getOwner()))
+                                && !mShopping
+                                && !shoppingListItem.isItemBought()  ) {
+                            String itemName = shoppingListItem.getItemName();
+                            String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
+                            showEditListItemNameDialog(itemName, itemKey);
+                        }
 
                     }
                 }
@@ -174,6 +182,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (view.getId() != R.id.list_view_footer_empty) {
                     String itemKey = mShoppingListItemsAdapter.getRef(position).getKey();
+                    // only the user who bought the item can unBuy the item
                     if (mShopping) {
                         Map<String, Object> childUpdates = new HashMap<>();
 
