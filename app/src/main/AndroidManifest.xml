@@ -32,6 +32,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MainActivity" />
         </activity>
+        <activity
+            android:name="com.udacity.firebase.shoppinglistplusplus.ui.SettingsActivity"
+            android:label="@string/action_settings"
+        />
+
     </application>
 
 </manifest>
