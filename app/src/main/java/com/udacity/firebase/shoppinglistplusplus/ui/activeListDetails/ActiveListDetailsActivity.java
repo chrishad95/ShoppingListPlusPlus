@@ -18,6 +18,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
@@ -72,9 +73,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
         }
 
         // create firebase references
-        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS).child(mListKey);
+        mShoppingListReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserEmail)).child(mListKey);
         mShoppingListItemsReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mListKey);
         mCurrentUserReference = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail));
+
+        Query sortedItemsRef = mShoppingListItemsReference.orderByChild(Constants.FIREBASE_PROPERTY_ITEM_BOUGHT);
 
         /**
          * Link layout elements from XML and setup the toolbar
@@ -82,7 +85,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         initializeScreen();
 
         // set up the list view to show items in the shopping list items adapter
-        mShoppingListItemsAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class, R.layout.single_active_list_item, mShoppingListItemsReference, mListKey, mUserEmail);
+        mShoppingListItemsAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class, R.layout.single_active_list_item, sortedItemsRef, mListKey, mUserEmail);
         mListView.setAdapter(mShoppingListItemsAdapter);
 
         ValueEventListener shoppingListListener = new ValueEventListener() {
@@ -384,7 +387,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void toggleShopping(View view) {
 
-        DatabaseReference usersShoppingRef = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_ACTIVE_LISTS).child(mListKey)
+        DatabaseReference usersShoppingRef = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserEmail)).child(mListKey)
                 .child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING)
                 .child(Utils.encodeEmail(mUserEmail));
 

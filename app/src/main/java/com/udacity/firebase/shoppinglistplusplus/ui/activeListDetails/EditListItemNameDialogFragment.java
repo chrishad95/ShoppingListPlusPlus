@@ -73,7 +73,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                 // update the item name and update the list changed timestamp
 
                 HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
-                dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
+                dateLastChangedObj.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
                 Map<String, Object> childUpdates = new HashMap<>();
 

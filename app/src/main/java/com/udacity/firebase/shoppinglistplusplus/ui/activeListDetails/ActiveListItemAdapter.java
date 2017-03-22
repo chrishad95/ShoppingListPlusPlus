@@ -16,6 +16,7 @@ import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 
@@ -131,7 +132,7 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
         HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
         dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
 
-        childUpdates.put("/" + Constants.FIREBASE_LOCATION_ACTIVE_LISTS + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, dateLastChangedObj);
+        childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserEmail) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, dateLastChangedObj);
 
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
 

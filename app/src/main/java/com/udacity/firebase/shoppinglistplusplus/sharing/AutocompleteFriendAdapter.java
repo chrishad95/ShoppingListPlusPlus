@@ -3,9 +3,9 @@ package com.udacity.firebase.shoppinglistplusplus.sharing;
 import android.app.Activity;
 import android.view.View;
 
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Query;
-import com.firebase.ui.FirebaseListAdapter;
+import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.Query;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 
 /**
@@ -27,9 +27,6 @@ public class AutocompleteFriendAdapter extends FirebaseListAdapter<User> {
      * with items inflated from single_autocomplete_item.xml
      * populateView also handles data changes and updates the listView accordingly
      */
-    @Override
-    protected void populateView(View view, final User user) {
-    }
 
     /** Checks if the friend you try to add is the current user **/
     private boolean isNotCurrentUser(User user) {
@@ -41,4 +38,8 @@ public class AutocompleteFriendAdapter extends FirebaseListAdapter<User> {
         return true;
     }
 
+    @Override
+    protected void populateView(View v, User model, int position) {
+
+    }
 }

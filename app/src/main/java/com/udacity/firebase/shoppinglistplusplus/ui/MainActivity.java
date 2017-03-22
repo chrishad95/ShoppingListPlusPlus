@@ -80,6 +80,11 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
 
     @Override
     public void onDestroy() {

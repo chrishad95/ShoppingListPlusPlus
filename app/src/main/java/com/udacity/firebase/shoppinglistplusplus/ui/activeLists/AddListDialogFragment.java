@@ -111,7 +111,6 @@ public class AddListDialogFragment extends DialogFragment {
         Map<String, Object> listValues = shoppingList.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/" + Constants.FIREBASE_LOCATION_ACTIVE_LISTS + "/" + listKey, listValues);
         childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserName) + "/" + listKey, listValues);
 
         mFirebaseListsReference.updateChildren(childUpdates);

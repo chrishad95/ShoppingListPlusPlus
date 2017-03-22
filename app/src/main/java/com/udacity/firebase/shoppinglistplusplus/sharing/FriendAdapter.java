@@ -3,10 +3,9 @@ package com.udacity.firebase.shoppinglistplusplus.sharing;
 import android.app.Activity;
 import android.view.View;
 
-import com.firebase.client.Firebase;
-import com.firebase.client.Query;
-import com.firebase.client.ValueEventListener;
-import com.firebase.ui.FirebaseListAdapter;
+import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 
@@ -17,7 +16,7 @@ import java.util.HashMap;
  */
 public class FriendAdapter extends FirebaseListAdapter<User> {
     private static final String LOG_TAG = FriendAdapter.class.getSimpleName();
-    private HashMap <Firebase, ValueEventListener> mLocationListenerMap;
+    //private HashMap <Firebase, ValueEventListener> mLocationListenerMap;
 
 
     /**
@@ -34,10 +33,6 @@ public class FriendAdapter extends FirebaseListAdapter<User> {
      * with items inflated from single_user_item.xml
      * populateView also handles data changes and updates the listView accordingly
      */
-    @Override
-    protected void populateView(View view, final User friend) {
-
-    }
 
     /**
      * Public method that is used to pass ShoppingList object when it is loaded in ValueEventListener
@@ -67,5 +62,10 @@ public class FriendAdapter extends FirebaseListAdapter<User> {
     @Override
     public void cleanup() {
         super.cleanup();
+    }
+
+    @Override
+    protected void populateView(View v, User model, int position) {
+
     }
 }

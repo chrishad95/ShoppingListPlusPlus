@@ -10,7 +10,6 @@ public final class Constants {
      * where active lists are stored (ie "activeLists")
      */
     public static final String FIREBASE_LOCATION_SHOPPING_LIST_ITEMS = "shopping-list-items";
-    public static final String FIREBASE_LOCATION_ACTIVE_LISTS = "lists";
     public static final String FIREBASE_LOCATION_USER_LISTS = "user-lists";
     public static final String FIREBASE_LOCATION_USERS = "users";
 
@@ -31,6 +30,11 @@ public final class Constants {
      */
     public static final String KEY_LAYOUT_RESOURCE = "LAYOUT_RESOURCE";
     public static final String KEY_EMAIL = "KEY_EMAIL";
+    public static final String KEY_PREF_SORT_ORDER_LISTS = "key-pref-sort-order-lists";
+
+    public static final String ORDER_BY_KEY = "orderByPushKey";
+    public static final String ORDER_BY_OWNER_EMAIL = "orderByOwnerEmail";
+
 
     public static final String EXTRA_LIST_NAME = "LIST_NAME";
     public static final String EXTRA_LIST_KEY = "LIST_KEY";
@@ -38,6 +42,7 @@ public final class Constants {
     public static final String EXTRA_ITEM_NAME = "ITEM_NAME";
     public static final String EXTRA_USER_NAME = "USER_NAME";
 
+    public static final String FIREBASE_PROPERTY_TIMESTAMP = "date";
     public static final String FIREBASE_PROPERTY_LIST_NAME = "listName";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED = "dateLastChanged";
     public static final String FIREBASE_PROPERTY_TIMESTAMP_CREATED = "timestampCreated";
