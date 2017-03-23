@@ -126,17 +126,10 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
         // if we remove and item from the list, we need to remove the item and update the list changed timestamp
 
         HashMap<String, Object> childUpdates = new HashMap<>();
+
+        Utils.updateMapWithTimestampLastChanged(mListKey,mUserEmail,childUpdates);
         childUpdates.put("/"  + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemKey, null);
 
-
-        HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
-        dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
-
-        childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserEmail) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, dateLastChangedObj);
-
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
-
-
-
     }
 }

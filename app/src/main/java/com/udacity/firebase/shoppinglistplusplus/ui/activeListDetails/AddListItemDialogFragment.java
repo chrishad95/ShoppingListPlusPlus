@@ -74,12 +74,9 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
             String itemId = mFirebaseListsReference.child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mListKey).push().getKey();
             ShoppingListItem mItem = new ShoppingListItem(itemName, mUserEmail);
 
-            HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
-            dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
+            HashMap<String, Object> childUpdates = new HashMap<>();
 
-            Map<String, Object> childUpdates = new HashMap<>();
-
-            childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserEmail) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED + "/", dateLastChangedObj);
+            Utils.updateMapWithTimestampLastChanged(mListKey,mUserEmail,childUpdates);
             childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + itemId + "/", mItem);
 
             mFirebaseListsReference.updateChildren(childUpdates);

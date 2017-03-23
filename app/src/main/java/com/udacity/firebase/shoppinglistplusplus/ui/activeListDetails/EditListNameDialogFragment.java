@@ -10,6 +10,7 @@ import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
     String mListName;
     String mListKey;
+    String mOwnerEmail;
 
 
     /**
@@ -33,6 +35,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         Bundle bundle = EditListDialogFragment.newInstanceHelper(shoppingList, R.layout.dialog_edit_list);
         bundle.putString(Constants.EXTRA_LIST_NAME, shoppingList.getListName());
         bundle.putString(Constants.EXTRA_LIST_KEY, shoppingList.getKey());
+        bundle.putString(Constants.EXTRA_USER_NAME, shoppingList.getOwner());
 
         editListNameDialogFragment.setArguments(bundle);
         return editListNameDialogFragment;
@@ -46,7 +49,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         super.onCreate(savedInstanceState);
         mListName = getArguments().getString(Constants.EXTRA_LIST_NAME);
         mListKey = getArguments().getString(Constants.EXTRA_LIST_KEY);
-
+        mOwnerEmail = getArguments().getString(Constants.EXTRA_USER_NAME);
     }
 
 
@@ -71,19 +74,15 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         if (!inputListName.equals("")) {
             if (!inputListName.equals(mListName)) {
 
-                DatabaseReference mFirebaseListsReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
-
-
+                DatabaseReference mFirebaseReference = FirebaseDatabase.getInstance().getReference();
                 HashMap<String, Object> updatedProperties = new HashMap<String, Object>();
 
-                updatedProperties.put(Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
+                //updatedProperties.put(Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
 
-                HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
-                dateLastChangedObj.put("date", ServerValue.TIMESTAMP);
-                updatedProperties.put(Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, dateLastChangedObj);
+                Utils.updateMapForAllWithValue(mListKey,mOwnerEmail,updatedProperties,Constants.FIREBASE_PROPERTY_LIST_NAME,inputListName);
+                Utils.updateMapWithTimestampLastChanged(mListKey,mOwnerEmail,updatedProperties);
 
-                mFirebaseListsReference.updateChildren(updatedProperties);
-
+                mFirebaseReference.updateChildren(updatedProperties);
             }
         }
 

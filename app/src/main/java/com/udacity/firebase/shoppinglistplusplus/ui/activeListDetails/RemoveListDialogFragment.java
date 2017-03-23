@@ -11,6 +11,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,8 @@ import java.util.Map;
 public class RemoveListDialogFragment extends DialogFragment {
     final static String LOG_TAG = RemoveListDialogFragment.class.getSimpleName();
     private String mListKey;
+    private String mListOwner;
+
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
@@ -29,6 +32,7 @@ public class RemoveListDialogFragment extends DialogFragment {
         Bundle bundle = new Bundle();
 
         bundle.putString(Constants.EXTRA_LIST_KEY, shoppingList.getKey());
+        bundle.putString(Constants.EXTRA_USER_NAME, shoppingList.getOwner());
 
         removeListDialogFragment.setArguments(bundle);
         return removeListDialogFragment;
@@ -40,8 +44,8 @@ public class RemoveListDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mListKey = getArguments().getString(Constants.EXTRA_LIST_KEY);
+        mListOwner = getArguments().getString(Constants.EXTRA_USER_NAME);
     }
 
     @Override
@@ -68,13 +72,13 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/lists/" + mListKey, null);
-        childUpdates.put("/shoppingListItems/" + mListKey, null);
+        HashMap<String, Object> childUpdates = new HashMap<>();
+
+        Utils.updateMapForAllWithValue(mListKey, mListOwner, childUpdates, "", null);
+
+        childUpdates.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey, null);
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
 
-//        DatabaseReference listReference = FirebaseDatabase.getInstance().getReference().child("lists").child(mListKey);
-//        listReference.removeValue();
     }
 
 }

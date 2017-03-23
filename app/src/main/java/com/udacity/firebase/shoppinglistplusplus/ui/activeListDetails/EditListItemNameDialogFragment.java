@@ -10,6 +10,7 @@ import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
     private String mListKey;
     private String mItemKey;
     private String mItemName;
+    private String mListOwner;
 
 
     /**
@@ -35,6 +37,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
         bundle.putString(Constants.EXTRA_LIST_KEY, listKey);
         bundle.putString(Constants.EXTRA_ITEM_KEY, itemKey);
         bundle.putString(Constants.EXTRA_ITEM_NAME, itemName);
+        bundle.putString(Constants.EXTRA_USER_NAME, shoppingList.getOwner());
+
         editListItemNameDialogFragment.setArguments(bundle);
 
         return editListItemNameDialogFragment;
@@ -49,6 +53,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
         mListKey = getArguments().getString(Constants.EXTRA_LIST_KEY);
         mItemKey = getArguments().getString(Constants.EXTRA_ITEM_KEY);
         mItemName = getArguments().getString(Constants.EXTRA_ITEM_NAME);
+        mListOwner = getArguments().getString(Constants.EXTRA_USER_NAME);
+
 
     }
 
@@ -71,16 +77,12 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
         if (!itemName.equals("")) {
             if (!itemName.equals(mItemName)) {
                 // update the item name and update the list changed timestamp
+                HashMap<String, Object> updateValues = new HashMap<>();
 
-                HashMap<String, Object> dateLastChangedObj = new HashMap<String, Object>();
-                dateLastChangedObj.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+                Utils.updateMapWithTimestampLastChanged(mListKey,mListOwner,updateValues);
+                updateValues.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListOwner + "/" + mListKey + "/" + mItemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_NAME + "/", itemName);
 
-                Map<String, Object> childUpdates = new HashMap<>();
-
-                childUpdates.put("/lists/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED + "/", dateLastChangedObj);
-                childUpdates.put("/shoppingListItems/" + mListKey + "/" + mItemKey + "/" + Constants.FIREBASE_PROPERTY_ITEM_NAME + "/", itemName);
-
-                FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates);
+                FirebaseDatabase.getInstance().getReference().updateChildren(updateValues);
             }
         }
 

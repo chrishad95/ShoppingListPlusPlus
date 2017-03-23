@@ -387,16 +387,19 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void toggleShopping(View view) {
 
-        DatabaseReference usersShoppingRef = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserEmail)).child(mListKey)
-                .child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING)
-                .child(Utils.encodeEmail(mUserEmail));
+        DatabaseReference usersShoppingRef = FirebaseDatabase.getInstance().getReference();
+
+        HashMap<String, Object> updatedDataMap = new HashMap<String, Object>();
+        String propertyToUpdate = Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + Utils.encodeEmail(mUserEmail);
 
         if (mShopping) {
-            usersShoppingRef.removeValue();
+            Utils.updateMapForAllWithValue(mListKey,mUserEmail,updatedDataMap, propertyToUpdate, null);
+            Utils.updateMapWithTimestampLastChanged(mListKey,mUserEmail,updatedDataMap);
         } else {
-            usersShoppingRef.setValue(mCurrentUser);
+            Utils.updateMapForAllWithValue(mListKey,mUserEmail,updatedDataMap,propertyToUpdate, mCurrentUser.toMap());
+            Utils.updateMapWithTimestampLastChanged(mListKey,mUserEmail,updatedDataMap);
         }
-
+        usersShoppingRef.updateChildren(updatedDataMap);
     }
 
 

@@ -39,7 +39,7 @@ public class Utils {
             HashMap<String, Object> mapToUpdate,
             String propertyToUpdate, Object valueToUpdate) {
 
-        mapToUpdate.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + owner + "/"
+        mapToUpdate.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(owner) + "/"
             + listId + "/" + propertyToUpdate, valueToUpdate);
 
         return  mapToUpdate;

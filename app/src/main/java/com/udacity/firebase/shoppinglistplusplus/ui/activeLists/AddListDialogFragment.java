@@ -101,20 +101,20 @@ public class AddListDialogFragment extends DialogFragment {
      * Add new active list
      */
     public void addShoppingList() {
-        DatabaseReference mFirebaseListsReference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference mFirebaseReference = FirebaseDatabase.getInstance().getReference();
 
-        String listKey =  mFirebaseListsReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).push().getKey();
+        String listKey =  mFirebaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(mUserName)).push().getKey();
 
         String listName = mEditTextListName.getText().toString();
         ShoppingList shoppingList = new ShoppingList(listName, mUserName, listKey);
 
-        Map<String, Object> listValues = shoppingList.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();
+        HashMap<String, Object> listValues = (HashMap<String, Object>) shoppingList.toMap();
+        HashMap<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(mUserName) + "/" + listKey, listValues);
+        Utils.updateMapForAllWithValue(listKey, mUserName, childUpdates, "", listValues);
+        mFirebaseReference.updateChildren(childUpdates);
 
-        mFirebaseListsReference.updateChildren(childUpdates);
-
+        AddListDialogFragment.this.getDialog().cancel();
     }
 
 }
