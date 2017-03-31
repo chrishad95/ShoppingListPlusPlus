@@ -12,6 +12,9 @@ public final class Constants {
     public static final String FIREBASE_LOCATION_SHOPPING_LIST_ITEMS = "shopping-list-items";
     public static final String FIREBASE_LOCATION_USER_LISTS = "user-lists";
     public static final String FIREBASE_LOCATION_USERS = "users";
+    public static final String FIREBASE_LOCATION_USERFRIENDS = "userFriends";
+    public static final String FIREBASE_LOCATION_SHARED_WITH = "sharedWith";
+
 
 
     /**

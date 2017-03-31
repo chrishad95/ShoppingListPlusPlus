@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +26,7 @@ import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
+import com.udacity.firebase.shoppinglistplusplus.sharing.ShareListActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
@@ -245,7 +247,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         /* Only the edit and remove options are implemented */
         remove.setVisible(mCurrentUserIsOwner);
         edit.setVisible(mCurrentUserIsOwner);
-        share.setVisible(false);
+        share.setVisible(true);
         archive.setVisible(false);
 
         return true;
@@ -275,6 +277,12 @@ public class ActiveListDetailsActivity extends BaseActivity {
          * Eventually we'll add this
          */
         if (id == R.id.action_share_list) {
+            if (mCurrentUserIsOwner) {
+                Intent intent = new Intent(ActiveListDetailsActivity.this, ShareListActivity.class);
+                intent.putExtra(Constants.EXTRA_USER_NAME, mUserEmail);
+                intent.putExtra(Constants.EXTRA_LIST_KEY, mListKey);
+                startActivity(intent);
+            }
             return true;
         }
 
