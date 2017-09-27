@@ -27,6 +27,7 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
     private String mListKey;
     private ShoppingList mShoppingList;
     private String mUserEmail;
+    private Activity mActivity;
 
     public void setShoppingList(ShoppingList shoppingList) {
         mShoppingList = shoppingList;
@@ -37,7 +38,7 @@ public class ActiveListItemAdapter extends FirebaseListAdapter<ShoppingListItem>
      */
     public ActiveListItemAdapter(Activity activity, Class<ShoppingListItem> modelClass, int modelLayout,
                                  Query ref, String listKey, String userEmail) {
-        super(activity, modelClass, modelLayout, ref);
+        super(activity.getApplicationContext(), modelClass, modelLayout, ref);
         this.mActivity = activity;
         this.mListKey = listKey;
         this.mUserEmail = userEmail;

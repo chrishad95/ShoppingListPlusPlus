@@ -192,14 +192,17 @@ public abstract class BaseActivity extends AppCompatActivity  {
         super.onActivityResult(requestCode,resultCode,data);
 
         // handle the result from firebaseAuth
-
         if (requestCode == RC_SIGN_IN) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(this, "Sign in cancelled.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
+            handleSignInResponse(resultCode, data);
+            return;
+        }
+    }
+    private void handleSignInResponse(int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Toast.makeText(this,"Sign in ok.", Toast.LENGTH_SHORT).show();
+        }
+        if (resultCode == RESULT_CANCELED) {
+            Toast.makeText(this,"Sign in was cancelled.", Toast.LENGTH_SHORT).show();
         }
     }
 }

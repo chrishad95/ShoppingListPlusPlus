@@ -25,9 +25,10 @@ import org.w3c.dom.Text;
 
 public class ActiveListAdapter extends FirebaseListAdapter<ShoppingList> {
     private String mUserEmail;
+    private Activity mActivity;
 
     public ActiveListAdapter(Activity activity, Class<ShoppingList> modelClass, int modelLayout, Query ref, String userEmail) {
-        super(activity, modelClass, modelLayout, ref);
+        super(activity.getApplicationContext(), modelClass, modelLayout, ref);
         this.mUserEmail = userEmail;
         this.mActivity = activity;
     }

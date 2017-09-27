@@ -2,6 +2,7 @@ package com.udacity.firebase.shoppinglistplusplus.model;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,12 @@ public class ShoppingList {
     public HashMap<String, Object> getTimestampCreated() { return timestampCreated; }
     public HashMap getUsersShopping() {
         return usersShopping;
+    }
+
+    public void setTimestampLastChangedToNow() {
+        HashMap<String, Object> timestampNowObject = new HashMap<String, Object>();
+        timestampNowObject.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+        this.dateLastChanged = timestampNowObject;
     }
 
     @Exclude

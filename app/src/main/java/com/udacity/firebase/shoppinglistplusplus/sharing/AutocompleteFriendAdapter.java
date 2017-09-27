@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.sharing;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -23,14 +24,15 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
  */
 public class AutocompleteFriendAdapter extends FirebaseListAdapter<User> {
     private String mUseremail;
+    private Activity mActivity;
+
 
     /**
      * Public constructor that initializes private instance variables when adapter is created
      */
-    public AutocompleteFriendAdapter(Activity activity, Class<User> modelClass, int modelLayout,
+    public AutocompleteFriendAdapter(Context context, Class<User> modelClass, int modelLayout,
                                      Query ref, String useremail) {
-        super(activity, modelClass, modelLayout, ref);
-        this.mActivity = activity;
+        super(context, modelClass, modelLayout, ref);
         this.mUseremail = useremail;
     }
 
@@ -43,7 +45,7 @@ public class AutocompleteFriendAdapter extends FirebaseListAdapter<User> {
     /** Checks if the friend you try to add is the current user **/
     private boolean isNotCurrentUser(User user) {
         if (user.getEmail().equals(mUseremail)) {
-            Toast.makeText(mActivity, mActivity.getResources().getString(R.string.toast_you_cant_add_yourself), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this.mActivity, mContext.getText(R.string.toast_you_cant_add_yourself),Toast.LENGTH_SHORT).show();
             return false;
         }
 

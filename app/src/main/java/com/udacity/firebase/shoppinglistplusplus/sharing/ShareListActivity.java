@@ -32,6 +32,11 @@ public class ShareListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_list);
         mlistKey = getIntent().getStringExtra(Constants.EXTRA_LIST_KEY);
+        if (mlistKey == null) {
+            finish();
+            return;
+        }
+
         mUserEmail = getIntent().getStringExtra(Constants.EXTRA_USER_NAME);
 
 
