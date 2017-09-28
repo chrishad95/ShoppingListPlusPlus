@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.udacity.firebase.shoppinglistplusplus">
 
-
     <application
         android:name="com.udacity.firebase.shoppinglistplusplus.ShoppingListApplication"
         android:allowBackup="true"
@@ -54,6 +53,9 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".sharing.ShareListActivity" />
+        </activity>
+        <activity
+            android:name=".ui.AuthUIActivity">
         </activity>
     </application>
 

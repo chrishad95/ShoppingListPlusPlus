@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,91 +37,21 @@ import java.util.Arrays;
 public abstract class BaseActivity extends AppCompatActivity  {
 
     protected String mUserEmail;
-    private String mUserName;
 
-    public static final int RC_SIGN_IN = 1;
-
-    // Firebase auth variables
-    protected FirebaseAuth mFirebaseAuth;
-    protected FirebaseAuth.AuthStateListener mAuthStateListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(BaseActivity.this);
         mUserEmail = sp.getString(Constants.KEY_EMAIL, null);
+   }
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
+    private void saveUser() {    }
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser authUser = firebaseAuth.getCurrentUser();
-                if (authUser != null) {
-                    // logged in!!!
-                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    SharedPreferences.Editor spe = sp.edit();
-
-                    mUserEmail = authUser.getEmail();
-                    mUserName = authUser.getDisplayName();
-
-                    spe.putString(Constants.KEY_EMAIL, mUserEmail).apply();
-
-                    FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail))
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            User user = dataSnapshot.getValue(User.class);
-                            if (user != null) {
-                                // user existed, nothing to do
-                            } else {
-                                user = new User(mUserName, mUserEmail);
-                                FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS).child(Utils.encodeEmail(mUserEmail)).setValue(user);
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-
-                } else {
-                    onSignedOutCleanup();
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setProviders(Arrays.asList(
-                                            new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                    .build(),
-                            RC_SIGN_IN);
-                }
-            }
-        };
-
-    }
-
-    private void saveUser() {
-
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        // remove the authstate listener
-        if (mAuthStateListener != null) {
-            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
-    }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
     @Override
@@ -169,13 +100,7 @@ public abstract class BaseActivity extends AppCompatActivity  {
     }
 
 
-    private void onSignedOutCleanup() {
-        mUserEmail = null;
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor spe = sp.edit();
-        spe.clear();
-        spe.commit();
-    }
+
 
     @Override
     protected void onResume() {
@@ -187,22 +112,6 @@ public abstract class BaseActivity extends AppCompatActivity  {
         super.onPause();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
 
-        // handle the result from firebaseAuth
-        if (requestCode == RC_SIGN_IN) {
-            handleSignInResponse(resultCode, data);
-            return;
-        }
-    }
-    private void handleSignInResponse(int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            Toast.makeText(this,"Sign in ok.", Toast.LENGTH_SHORT).show();
-        }
-        if (resultCode == RESULT_CANCELED) {
-            Toast.makeText(this,"Sign in was cancelled.", Toast.LENGTH_SHORT).show();
-        }
-    }
+
 }

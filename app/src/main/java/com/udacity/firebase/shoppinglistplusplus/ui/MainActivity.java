@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.ui;
 
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.udacity.firebase.shoppinglistplusplus.R;
@@ -27,6 +29,8 @@ import com.udacity.firebase.shoppinglistplusplus.ui.meals.AddMealDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
+import static com.firebase.ui.auth.ui.ExtraConstants.EXTRA_IDP_RESPONSE;
+
 /**
  * Represents the home screen of the app which
  * has a {@link ViewPager} with {@link ShoppingListsFragment} and {@link MealsFragment}
@@ -35,11 +39,27 @@ public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     public static final String ANONYMOUS = "anonymous";
 
+    private String mUserName;
+
+    public static final int RC_SIGN_IN = 1;
+
+    // Firebase auth variables
+    protected FirebaseAuth mFirebaseAuth;
+    protected FirebaseAuth.AuthStateListener mAuthStateListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser authUser = mFirebaseAuth.getCurrentUser();
+
+        if (authUser == null) {
+            startActivity(new Intent(this, AuthUIActivity.class));
+            finish();
+            return;
+        }
         /**
          * Link layout elements from XML and setup the toolbar
          */
@@ -85,10 +105,19 @@ public class MainActivity extends BaseActivity {
         super.onResume();
 
     }
-
+    @Override
+    public void onStart() {
+        super.onStart();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        // remove the authstate listener
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
     }
 
     /**
@@ -111,6 +140,32 @@ public class MainActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
+    private void onSignedOutCleanup() {
+        mUserEmail = null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor spe = sp.edit();
+        spe.clear();
+        spe.commit();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+
+        // handle the result from firebaseAuth
+        if (requestCode == RC_SIGN_IN) {
+            handleSignInResponse(resultCode, data);
+            return;
+        }
+    }
+    private void handleSignInResponse(int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Toast.makeText(this,"Sign in ok.", Toast.LENGTH_SHORT).show();
+        }
+        if (resultCode == RESULT_CANCELED) {
+            Toast.makeText(this,"Sign in was cancelled.", Toast.LENGTH_SHORT).show();
+        }
+    }
     /**
      * Create an instance of the AddList dialog fragment and show it
      */
@@ -129,6 +184,15 @@ public class MainActivity extends BaseActivity {
         dialog.show(MainActivity.this.getFragmentManager(), "AddMealDialogFragment");
     }
 
+    public static Intent createIntent(
+            Context context,
+            IdpResponse idpResponse) {
+        Intent startIntent = new Intent();
+        if (idpResponse != null) {
+            startIntent.putExtra(EXTRA_IDP_RESPONSE, idpResponse);
+        }
+        return startIntent.setClass(context, MainActivity.class);
+    }
 
 
 
@@ -194,4 +258,8 @@ public class MainActivity extends BaseActivity {
             }
         }
     }
+
+
+
+
 }
