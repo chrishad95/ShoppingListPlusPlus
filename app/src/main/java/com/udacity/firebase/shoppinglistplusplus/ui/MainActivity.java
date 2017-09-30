@@ -56,9 +56,9 @@ public class MainActivity extends BaseActivity {
         FirebaseUser authUser = mFirebaseAuth.getCurrentUser();
 
         if (authUser == null) {
-            startActivity(new Intent(this, AuthUIActivity.class));
-            finish();
-            return;
+            //startActivity(new Intent(this, AuthUIActivity.class));
+            //finish();
+            //return;
         }
         /**
          * Link layout elements from XML and setup the toolbar
@@ -108,7 +108,7 @@ public class MainActivity extends BaseActivity {
     @Override
     public void onStart() {
         super.onStart();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        //mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
     @Override
     public void onDestroy() {

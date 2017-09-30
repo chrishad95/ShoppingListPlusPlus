@@ -44,6 +44,9 @@ public abstract class BaseActivity extends AppCompatActivity  {
 
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(BaseActivity.this);
         mUserEmail = sp.getString(Constants.KEY_EMAIL, null);
+        if (mUserEmail == null) {
+            mUserEmail = "chrishadley@gmail.com";
+        }
    }
 
     private void saveUser() {    }
