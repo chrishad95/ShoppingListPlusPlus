@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,7 +14,13 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,17 +30,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
+import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * BaseActivity class is used as a base class for all activities in the app
  * It implements GoogleApiClient callbacks to enable "Logout" in all activities
  * and defines variables that are being shared across all activities
  */
-public abstract class BaseActivity extends AppCompatActivity  {
+public abstract class BaseActivity extends AppCompatActivity  implements GoogleApiClient.OnConnectionFailedListener {
 
     protected String mUserEmail;
     private String mUserName;
@@ -43,6 +54,9 @@ public abstract class BaseActivity extends AppCompatActivity  {
     // Firebase auth variables
     protected FirebaseAuth mFirebaseAuth;
     protected FirebaseAuth.AuthStateListener mAuthStateListener;
+
+    protected GoogleApiClient mGoogleApiClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +64,25 @@ public abstract class BaseActivity extends AppCompatActivity  {
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(BaseActivity.this);
         mUserEmail = sp.getString(Constants.KEY_EMAIL, null);
 
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
+                .build();
+
         mFirebaseAuth = FirebaseAuth.getInstance();
+
+        /*
+        FirebaseUser authUser = mFirebaseAuth.getCurrentUser();
+        if (authUser == null) {
+            Intent intent = new Intent(BaseActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -100,6 +132,7 @@ public abstract class BaseActivity extends AppCompatActivity  {
                 }
             }
         };
+        */
 
     }
 
@@ -110,17 +143,20 @@ public abstract class BaseActivity extends AppCompatActivity  {
     public void onDestroy() {
         super.onDestroy();
 
+        /*
         // remove the authstate listener
         if (mAuthStateListener != null) {
             mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         }
+        */
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
+        /*
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        */
     }
 
     @Override
@@ -147,7 +183,13 @@ public abstract class BaseActivity extends AppCompatActivity  {
         if (id == R.id.action_logout) {
             // logout the user
 
-            AuthUI.getInstance().signOut(this);
+            //AuthUI.getInstance().signOut(this);
+            mFirebaseAuth.signOut();
+
+            Intent intent = new Intent(BaseActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+
             return true;
 
 
@@ -201,5 +243,9 @@ public abstract class BaseActivity extends AppCompatActivity  {
                 finish();
             }
         }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
     }
 }

@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.AddListDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.ShoppingListsFragment;
+import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.AddMealDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
@@ -43,6 +44,14 @@ public class MainActivity extends BaseActivity {
         /**
          * Link layout elements from XML and setup the toolbar
          */
+
+        FirebaseUser authUser = mFirebaseAuth.getCurrentUser();
+        if (authUser == null) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            startActivity(intent);
+            finish();
+        }
 
         initializeScreen();
     }

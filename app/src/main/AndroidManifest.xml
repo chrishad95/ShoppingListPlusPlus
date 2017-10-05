@@ -32,6 +32,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MainActivity" />
         </activity>
+        <activity android:name=".ui.login.LoginActivity">
+        </activity>
+        <activity android:name=".ui.login.CreateAccountActivity">
+
+        </activity>
     </application>
 
 </manifest>
